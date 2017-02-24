@@ -31,6 +31,42 @@ set.seed(0)
 #############################
 # FUNCTIONS
 #############################
+#--------------------------------------------
+# takes a path pointing to a collection of CEL files
+#  this was changed from "JD CEL files" to CELfiles
+#  this location can also be a link to another location on the filesystem
+#  so as to keep the repository light
+#als includes
+# functionality to filter which CEL files to read
+#  so as to keep the repository light
+#--------------------------------------------
+readCelFiles <- function(argpath='../Data/CELfiles', filter=character()) {
+
+    if(reqire(affxparser)) {
+
+	cel.files <- c(list.celfiles(file.path(argpath), full.names = FALSE))
+
+	cel.files.to.read <- setdiff(cel.files, filter)
+
+	cel.file.paths <- file.path(argpath, cel.files.to.read)
+
+	#Read the CEL files
+	try(
+		if(all(file.exists(file.paths))) {
+
+		    exp.cel <- read.celfiles(cel.file.paths)
+
+		} else {
+
+		    stop('one or more CEL file paths are problematic')
+		}
+	    )
+    } else {
+
+	stop('affxparser is not on search path')
+    }
+}
+
 
 #This function extracts the race and ethnicity from the uncurated string field in 
 #the phenotype data.frame included in the ExpressionSets from curatedOvarianData
@@ -76,11 +112,7 @@ labelCol <- function(x) {
 #--------------------------------------------
 
 
-#Get the path to the CEL files
-cel.files <- c(list.celfiles("Data/JD CEL files/", full.names = T))
-
-#Read the CEL files
-exp.cel <- read.celfiles(cel.files)
+exp.cel <- readCelFiles(filter=filt)
 
 #Before processing, plot the probe intensities as boxplots and histograms
 sample.colors <- c("red", "blue", "green", "purple", "grey", "orange", "lightblue", "lightgreen", "yellow", "cyan", "brown", "pink",
